@@ -1,0 +1,18 @@
+div.full-menu {
+	text-align: center;
+	height:100%;
+	width:100%;
+	z-index:-1;
+	background-color: #fff;
+	margin:0;
+	position: absolute;
+	top:0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+div.middle-menu p {
+	color: #333;
+	dispplay:block;
+}

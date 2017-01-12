@@ -1,0 +1,8 @@
+body {
+/*	cursor:pointer;*/
+}
+
+canvas {
+	z-index: -2;
+	position: absolute;
+}
