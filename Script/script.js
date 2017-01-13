@@ -5,6 +5,18 @@ var velocity;
 var gameState = "loading";
 var players = [];
 var light;
+
+function onMouseMove(event) {
+	if (camera&&event.shiftKey) {
+		let x = event.clientX/window.innerWidth;
+		let y = event.clientY/window.innerHeight;
+		camera.position.x = interpolate([0,-100],[1,100]).at(x);
+		camera.position.y = interpolate([0,100],[1,-100]).at(y);
+		//camera.position.z= 60;
+		camera.lookAt(new THREE.Vector3(0,0,0));
+		//camera.position.set()
+	}
+}
 function pauseGame() {
 	if (gameState === "playing") {
 		gameState = "paused";
@@ -63,7 +75,7 @@ function startGame() {
 function addLights() {
 	hemiLight = new THREE.HemisphereLight(0xffffff,0xffffff,0.7);
 	hemiLight.color.setRGB(0.4, 0.4, 0.4);
-	hemiLight.position.set(500, 500, 250);
+	hemiLight.position.set(300, 500, 100);
 	scene.add(hemiLight);
 }
 function setupThreeJS() {
@@ -127,6 +139,7 @@ gameState = "menu";
 var menu = new Menu(domInterface);
 mainUpdateLoop();
 window.addEventListener('resize', resize, false);
+window.addEventListener('mousemove', onMouseMove, false);
 function mainUpdateLoop() {
 	stats.update();
 	var delta = stats.delta;
@@ -155,24 +168,25 @@ function mainUpdateLoop() {
 	requestAnimationFrame(mainUpdateLoop);
 }
 /* Fake Input */
-/*
+
 startGame();
 gamepadChange({
-	key: 9,
+	key: 9, // Start
 	type: "button-push",
 	id: 0
 });
 gamepadChange({
-	key: 9,
+	key: 9, // Start
 	type: "button-push",
 	id: 1
 });
 gamepadChange({
-	key: 7,
+	key: 7, // Forward
 	type: "button-dial",
 	value: 1,
-	id: 0
+	id: 1
 });
+// Shoot
 setInterval(function() {
 	gamepadChange({
 		key: 0,
@@ -191,5 +205,5 @@ setInterval(function() {
 	});
 	s = !s
 }, 3000);
-*/
+
 //gamepadChange({key:7, type:"button-dial", value:0.8, id:1});
