@@ -108,18 +108,18 @@ function setupThreeJS() {
 }
 function update(finalize) {
 	controls.update();
+	if (players[0])
+		players[0].update();
+	if (players[1])
+		players[1].update();
+	if (players[2])
+		players[2].update();
+	if (players[3])
+		players[3].update();
 	if (gameState == "menu")
 		menu.update();
 	else if (gameState == "starting" || gameState == "playing") {
 		if (finalize) {
-			if (players[0])
-				players[0].update();
-			if (players[1])
-				players[1].update();
-			if (players[2])
-				players[2].update();
-			if (players[3])
-				players[3].update();
 			renderer.render(scene, camera);
 		}
 	}
@@ -134,7 +134,7 @@ function resize() {
 	}
 }
 stats.begin();
-controls = new GamepadControls(scene,camera,gamepadChange);
+controls = new GamepadControls(gamepadChange);
 gameState = "menu";
 var menu = new Menu(domInterface);
 mainUpdateLoop();
@@ -192,7 +192,7 @@ setInterval(function() {
 		key: 0,
 		type: "button-push",
 		value: 1,
-		id: 0
+		id: 2
 	});
 }, 1500);
 var s = true;
@@ -201,7 +201,7 @@ setInterval(function() {
 		key: 0,
 		type: "axis-change",
 		value: s ? -0.9 : 0.9,
-		id: 0
+		id: 2
 	});
 	s = !s
 }, 3000);
