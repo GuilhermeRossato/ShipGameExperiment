@@ -1,7 +1,9 @@
-function GamepadControls(scene, camera, gamepadChangeFunction) {
+function GamepadControls(gamepadChangeFunction) {
 	this.activeGamepads = 0;
 	this.callback = gamepadChangeFunction;
 	this.lastGamepads = [];
+  document.addEventListener("keydown",event => this.onKeyDown.call(this, event));
+  document.addEventListener("keyup",event => this.onKeyUp.call(this, event));
 }
 GamepadControls.prototype = {
 	constructor: GamepadControls,
@@ -9,6 +11,69 @@ GamepadControls.prototype = {
 		var a = navigator.getGamepads();
 		return [a[0], a[1]];
 	},
+onKeyDown: function(event) {
+    if (event.key == "ArrowLeft") {
+    	this.callback.call(window, {
+				type: "axis-change",
+				id: 0,
+				key: 0,
+				value: -1,
+				timestamp: event.timestamp
+			});
+    } else if (event.key == "ArrowRight") {
+    	this.callback.call(window, {
+				type: "axis-change",
+				id: 0,
+				key: 0,
+				value: 1,
+				timestamp: event.timestamp
+			});
+    } else if (event.key == "w") {
+    	this.callback.call(window, {
+				type: "button-dial",
+				id: 0,
+				key: 7,
+				value: 1.5,
+				timestamp: event.timestamp
+			});
+	} else if (event.key == "ArrowDown") {
+    		this.callback.call(window, {
+				type: "axis-change",
+				id: 0,
+				key: 1,
+				value: 0.8,
+				timestamp: event.timestamp
+		});
+	} else if (event.key == "ArrowUp") {
+    		this.callback.call(window, {
+				type: "axis-change",
+				id: 0,
+				key: 1,
+				value: -0.8,
+				timestamp: event.timestamp
+		});
+	}
+  },
+  onKeyUp: function(event) {
+//console.log(event.key);
+	if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
+	    	this.callback.call(window, {
+				type: "axis-change",
+				id: 0,
+				key: 0,
+				value: 0,
+				timestamp: event.timestamp
+			});
+	} else if (event.key == "ArrowDown"||event.key == "ArrowUp") {
+    		this.callback.call(window, {
+				type: "axis-change",
+				id: 0,
+				key: 1,
+				value: 0,
+				timestamp: event.timestamp
+			});
+	}
+    },
 	update: function() {
 		let nowGamepads = this.getGamepads();
 		let lastGamepads = this.lastGamepads;
@@ -77,4 +142,12 @@ GamepadControls.prototype = {
 		}
 		);
 	}
+}
+
+document.onkeydown = function(event) {
+	if (event.key == "ArrowDown") {
+		event.preventDefault();
+		return false;
+	}
+	return true;
 }
