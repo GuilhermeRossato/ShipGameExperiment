@@ -82,5 +82,10 @@ Logger.prototype = {
 	clear: function() {
 		while (this.domElement.firstChild)
 			this.domElement.removeChild(this.domElement.firstChild);
+	},
+	reset: function() {
+		while (this.domElement.firstChild)
+			this.domElement.removeChild(this.domElement.firstChild);
+		this.resetTimer();
 	}
 }
