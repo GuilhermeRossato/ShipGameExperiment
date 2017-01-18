@@ -1,10 +1,13 @@
-function WorldHandler(scene) {
+function WorldHandler(scene, chunkCallback) {
+	this.chunkCallback  = chunkCallback
 	this.group = new THREE.Group();
 	this.group.name = "world";
 	scene.add(this.group);
 	this.parent = scene;
 	this.chunkSize = 20;
 	this.lastChunk = 0;
+	this.chunkSteps = 0;
+	this.chunkSteps2 = 0;
 }
 WorldHandler.prototype = {
 	constructor: WorldHandler,
@@ -31,104 +34,59 @@ WorldHandler.prototype = {
 			cb.multiplyScalar(-1);
 		face.normal.copy(cb);
 	},
-	splitDoubleFace: function(geometry, f0, f1, z) {
-		//Gets two faces and create vertices in the middle at specific Z
-		//(better than the script below for loops)
-	},
-	splitFaceRight: function(geometry, positions) {
-		if (geometry.vertices.length/2 === 4) {
-			let v0 = geometry.vertices[0]
-			  , v1 = geometry.vertices[1]
-			  , vertices = positions.map(function(pos, i) {
-				let vertice = new THREE.Vector3(pos.x, pos.y, (v0.z + v1.z) / 2);
-				geometry.vertices.push(vertice);
-				return vertice;
-			}), faces = [[1,0,8],[2,3,9],[2,9,8],[1,8,9]].map((abc, i) => {
-				let face = new THREE.Face3(abc[0], abc[1], abc[2]);
-				if (i === 0)
-					face.normal.set(0,1,0);
-				else if (i === 1)
-					face.normal.set(0,-1,0);
-				else
-					this.computeNormal(geometry, face, false);
-				geometry.faces.push(face);
-				geometry.faceVertexUvs[0].push([new THREE.Vector2(0,0), new THREE.Vector2(0,0), new THREE.Vector2(0,0)]);
-			});
-			geometry.faces[0].c = 8;
-			geometry.faces[1].a = 9;
-		} else if (geometry.vertices.length/2 === 5) {
-			let v0 = geometry.vertices[0]
-			  , v1 = geometry.vertices[8]
-			  , vertices = positions.map(function(pos, i) {
-				let vertice = new THREE.Vector3(pos.x, pos.y, (v0.z + v1.z) / 2);
-				geometry.vertices.push(vertice);
-				return vertice;
-			}), faces = [[8,0,10],[2,9,11],[2,11,10],[8,10,11]].map((abc, i) => {
-				let face = new THREE.Face3(abc[0], abc[1], abc[2]);
-				if (i === 0)
-					face.normal.set(0,1,0);
-				else if (i === 1)
-					face.normal.set(0,-1,0);
-				else
-					this.computeNormal(geometry, face, false);
-				geometry.faces.push(face);
-				geometry.faceVertexUvs[0].push([new THREE.Vector2(0,0), new THREE.Vector2(0,0), new THREE.Vector2(0,0)]);
-				return face;
-			});
-			geometry.faces[0].c = 10;
-			geometry.faces[14].a = 11;
-		} else if (geometry.vertices.length/2 === 6) {
-			let v0 = geometry.vertices[8]
-			  , v1 = geometry.vertices[1]
-			  , vertices = positions.map(function(pos, i) {
-				let vertice = new THREE.Vector3(pos.x, pos.y, (v0.z + v1.z) / 2);
-				geometry.vertices.push(vertice);
-				return vertice;
-			}), faces = [[1,8,12],[9,3,13],[9,13,12],[1,12,13]].map((abc, i) => {
-				let face = new THREE.Face3(abc[0], abc[1], abc[2]);
-				if (i === 0)
-					face.normal.set(0,1,0);
-				else if (i === 1)
-					face.normal.set(0,-1,0);
-				else
-					this.computeNormal(geometry, face, false);
-				geometry.faces.push(face);
-				geometry.faceVertexUvs[0].push([new THREE.Vector2(0,0), new THREE.Vector2(0,0), new THREE.Vector2(0,0)]);
-				return face;
-			});
-			geometry.faces[15].a = 12;
-			geometry.faces[1].a = 13;
-		}
-	},
 	generateWorld: function() {
+		var totalGeom = new THREE.Geometry();
+		var material = new THREE.MeshPhongMaterial({color: 0x666666});
+		var rots = [];
+		var pos = [];
 		[-55, 55].forEach((x,i)=>{
-			var geometry = new THREE.BoxGeometry(15,40,300);
-			if (i === 0) {
-				let xPositions = [b(7,20,Math.random()), b(10,30,Math.random()), b(10,30,Math.random())]
-				let yPositions = [b(0,20,Math.random()), b(0,20,Math.random()), b(0,20,Math.random())]
-				this.splitFaceRight(geometry, [new THREE.Vector3(xPositions[0],yPositions[0],0), new THREE.Vector3(xPositions[0],-20,0)]);
-				this.splitFaceRight(geometry, [new THREE.Vector3(xPositions[1],yPositions[1],0), new THREE.Vector3(xPositions[1],-20,0)]);
-				this.splitFaceRight(geometry, [new THREE.Vector3(xPositions[2],yPositions[2],0), new THREE.Vector3(xPositions[2],-20,0)]);
-				geometry.verticesNeedUpdate = true;
+			for (var j = -10; j <= 35; j++) {
+				var cube = new THREE.Mesh(new THREE.BoxGeometry(15,40,15),material);
+				cube.position.set(x, 20, -j*this.chunkSize);
+				if (j < -5) {
+					rots.push(new THREE.Vector3(0, b(-0.8, 0.8, Math.random()), 0));
+					cube.rotation.y = rots[rots.length-1].y;
+				} else {
+					let r = rots[(j+15)%rots.length];
+					cube.rotation.x = r.x;
+					cube.rotation.y = r.y;
+					cube.rotation.z = r.z;
+				}
+				cube.updateMatrix();
+				totalGeom.merge(cube.geometry, cube.matrix);
 			}
-			var material = new THREE.MeshPhongMaterial({
-				color: 0x666666
-			});
-			var cube = new THREE.Mesh(geometry,material);
-			cube.position.set(x, 20, 0);
-			this.group.add(cube);
 		}
 		);
-		this.left = this.group.children[0];
-		this.right = this.group.children[1];
+		var mesh = new THREE.Mesh(totalGeom, material);
+		this.group.add(mesh);
+	},
+	chunkTranverse: function() {
+		if (this.chunkCallback instanceof Function)
+			this.chunkCallback.call(this.parent);
+		this.chunkSteps++;
+		if (this.chunkSteps > 10) {
+			this.group.children[0].position.z -= 10*this.chunkSize;
+			this.chunkSteps = 0;
+			this.chunkSteps2++;
+			if (this.chunkSteps2 > 10) {
+				this.group.children[0].position.z -= 10*this.chunkSize;
+				this.chunkSteps2 = 0;
+			}
+		}
 	},
 	update: function(z) {
 		/* Update World */
+		this.group.position.z = z;
 		let newChunk = (z / this.chunkSize) | 0;
-		if (this.lastChunk != newChunk && this.group.children.length > 2) {
-			if (this.chunkCallback instanceof Function)
-				this.chunkCallback.call(this.parent);
-			this.chunkSteps++;
+		if (this.lastChunk != newChunk && this.group.children.length > 0) {
+			let distance = Math.abs(this.lastChunk - newChunk);
+			if (distance > 1)
+				console.warn("Super");
+			while (distance > 0) {
+				this.chunkTranverse();
+				distance -= 1;
+			}
+			this.lastChunk = newChunk;
 		}
 	}
 }
