@@ -22,7 +22,7 @@ function Player(scene, id) {
 	this.lastShot = 0;
 	this.score = 0;
 	this.id = id;
-	
+	this.paused = false;
 	/* Group Setup */
 	this.group = new THREE.Group();
 	this.group.name = "player"+id;
@@ -64,7 +64,10 @@ Player.prototype = {
 	constructor: Player,
 	gamepadChange: function(event) {
 		let btn = gamepadData["xbox 360"].buttons[event.key];
-		if (btn === "RT") {
+		//console.log("waht",btn, event.type);
+		if (btn === "START" && event.type === "button-push") {
+			this.paused = !this.paused;
+		} else if (btn === "RT") {
 			this.az = interpolate([0,0],[0.5,0.05],[1,0.25]).at(event.value);
 		} else if (event.type === "axis-change") {
 			if (event.key === 0) {
@@ -85,7 +88,7 @@ Player.prototype = {
 	},
 	clampXY: function() {
 		this.x = THREE.Math.clamp(this.x, -40, 40);
-		this.y = THREE.Math.clamp(this.y, 1, 50);
+		this.y = THREE.Math.clamp(this.y, 2, 48);
 	},
 	setSpeedBasedOnScore: function() {
 		if (this.score > 400)
@@ -99,27 +102,34 @@ Player.prototype = {
 		}
 	},
 	update: function() {
+		if (this.paused) {
+			this.ship.visible = this.shipLayer.visible = this.shipShadow.visible = false;
+			return;
+		}
+		this.ship.visible = this.shipLayer.visible = this.shipShadow.visible = true;
 		this.life++;
 		this.setSpeedBasedOnScore();
 		this.updatePosition();
 		this.showScore();
 		this.clampXY();
+		/* Ship Positioning */
 		this.ship.position.set(this.x,this.y+0.5,100);
 		this.shipLayer.position.set(this.x, this.y+2.5, 100);
+		let shadowScale = interpolate([0,1],[55,0.2]).at(this.y);
+		this.shipShadow.scale.set(shadowScale,1,shadowScale);
+		this.shipShadow.position.set(this.ship.position.x, 0.5, this.ship.position.z);
 		this.shots.update();
 		this.world.update(this.z);
 		this.enemies.update(this.z);
 		if (this.enemies.checkCollision(this)) {
 			this.reset();
 		}
-		let shadowScale = interpolate([0,1],[50,0.2]).at(this.y);
-		this.shipShadow.scale.set(shadowScale,1,shadowScale);
-		this.shipShadow.position.set(this.ship.position.x, 0.5, this.ship.position.z);
 	},
 	reset: function() {
 		this.x = 0;
 		this.y = 25;
 		this.enemies.reset();
 		this.score = 0;
+		this.world.reset();
 	}
 }

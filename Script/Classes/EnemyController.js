@@ -48,7 +48,7 @@ EnemyController.prototype = {
 			vec.set(obj.position.x+group.position.x, obj.position.y+group.position.y, -obj.position.z+100);
 			dist = vec.distanceTo(origin);
 		}
-		return (dist < 15.5);
+		return (dist < 16);
 	},
 	update: function(z) {
 		this.group.position.z = z;

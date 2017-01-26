@@ -69,8 +69,9 @@ WorldHandler.prototype = {
 			this.chunkSteps = 0;
 			this.chunkSteps2++;
 			if (this.chunkSteps2 > 10) {
-				this.group.children[0].position.z -= 10*this.chunkSize;
+				this.group.children[0].position.z -= 10.5*this.chunkSize;
 				this.chunkSteps2 = 0;
+				
 			}
 		}
 	},
@@ -88,5 +89,7 @@ WorldHandler.prototype = {
 			}
 			this.lastChunk = newChunk;
 		}
+	},
+	reset: function() {
 	}
 }
