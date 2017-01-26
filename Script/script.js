@@ -42,7 +42,7 @@ function gamepadChange(event) {
 			}
 		}
 	} else if (gameState == "playing" || gameState == "starting") {
-		if (players[event.id]instanceof Player) {
+		if (players[event.id] instanceof Player) {
 			players[event.id].gamepadChange(event);
 		} else if (event.key === 9 && event.type === "button-push") {
 			if (event.id === 0)
@@ -105,6 +105,10 @@ function setupThreeJS() {
 	mesh.rotation.y = 0.78539816;
 	scene.add(mesh);
 	camera.position.set(0, 0, 400);
+	scene.removePlayer = function(id) {
+		console.log("hi");
+		this.players[id] = undefined;
+	}
 }
 function update(finalize) {
 	controls.update();
@@ -175,6 +179,7 @@ gamepadChange({
 	type: "button-push",
 	id: 0
 });
+/*
 gamepadChange({
 	key: 9, // Start
 	type: "button-push",
@@ -205,5 +210,5 @@ setInterval(function() {
 	});
 	s = !s
 }, 3000);
-
+*/
 //gamepadChange({key:7, type:"button-dial", value:0.8, id:1});
